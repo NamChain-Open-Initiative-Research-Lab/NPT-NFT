@@ -1,0 +1,263 @@
+<!-- 
+Author       : Ramaguru Radhakrishnan
+Date Created : July - 2021
+Date Updated : 22.07.2021
+-->
+
+<!DOCTYPE html>
+<html>
+<head>
+	<link rel="icon" href="https://1.bp.blogspot.com/-0SArWfduw68/XkxV8EmBBcI/AAAAAAAAABw/h9aWSWbm0J4kilgn3xddzQ3PdoP-e3RZgCLcBGAsYHQ/s1600/SAVE_20200127_132431.jpg" type="image/jpg" sizes="16x16">
+    <title></title>
+    <meta charset="UTF-8"/>
+	<style>
+	body{        
+        padding-top: 50px;
+        padding-bottom: 10px;
+    }
+	.container{
+        width: 90%;
+        margin: 0 auto; 
+    }
+	.fixed-header, .fixed-footer{
+        width: 100%;
+        position: fixed;        
+        background: #000080;
+        padding: 10px 0;
+        color:#FFA500;
+    }
+	.fixed-header{
+        top: 0;
+    }
+    .fixed-footer{
+        bottom: 0;
+    } 
+	.container p{
+		padding-top: 40px;
+        line-height: 20px;
+    }
+	
+	
+	/* Style the tab */
+	.tab {
+	  overflow: hidden;
+	  border: 1px solid #ccc;
+	  background-color: #f1f1f1;
+	}
+
+	/* Style the buttons inside the tab */
+	.tab button {
+	  background-color: inherit;
+	  float: left;
+	  border: none;
+	  outline: none;
+	  cursor: pointer;
+	  padding: 14px 16px;
+	  transition: 0.3s;
+	  font-size: 17px;
+	}
+
+	/* Change background color of buttons on hover */
+	.tab button:hover {
+	  background-color: #ddd;
+	}
+
+	/* Create an active/current tablink class */
+	.tab button.active {
+	  background-color: #ccc;
+	}
+
+	/* Style the tab content */
+	.tabcontent {
+	  display: none;
+	  padding: 6px 12px;
+	  border: 1px solid #ccc;
+	  border-top: none;
+	}
+	
+	</style>
+</head>
+<body>
+	<div class="fixed-header">
+		<div class="container">
+		<center>
+			<h3> Numismatics Philately Trade - NFTs </h3>
+			<h5> Powered by IFPS and Filecoin </h5>
+		</center>
+		</div>
+	</div>
+	
+	<div class="container">
+	<p>
+			<div class="tab">
+				  <button class="tablinks" onclick="opentab(event, 'CNFT')">Create NFT</button>
+				  <button class="tablinks" onclick="opentab(event, 'VNFT')">View NFT</button>
+			</div>
+			
+			<div id="CNFT" class="tabcontent">
+			  <form>
+					<table>
+					 <tr><td> Token Name : </td> <td> <input type="text" cols="50" id="name" name="name"> </td></tr>
+					 <tr><td> Token Description : </td> <td> <input type="text" cols="50" id="desc" name="desc"> </td></tr>
+					 <tr><td> Token Attributes : </td> <td> <textarea rows="10" cols="50" id="att" name="att"></textarea> </td></tr>
+					 <tr><td> <input type="file" id="filetoipfs" name="filetoipfs" name="submit"> </td></tr>
+					 <tr><td> <input type="button" id="btn" onclick="" value="Mint NFT"> </td></tr>
+					</table>
+					<h4>CID: <div id="result"></div></h4>
+					
+				</form>
+			</div>
+			
+			<div id="VNFT" class="tabcontent">
+				<table>
+				<tr><td> ID : <input type="text" id="tokenIDr" name="tokenIDr"></td></tr>
+				<tr><td> <input type="button" id="view" onclick="" value="View NFT"></td></tr>
+				<tr><td> <div id="token_details"></div></td></tr>
+				</table>
+			</div>
+		</p>
+		</div>
+
+	<script>
+		function opentab(evt, tabName) {
+		  var i, tabcontent, tablinks;
+		  tabcontent = document.getElementsByClassName("tabcontent");
+		  for (i = 0; i < tabcontent.length; i++) {
+			tabcontent[i].style.display = "none";
+		  }
+		  tablinks = document.getElementsByClassName("tablinks");
+		  for (i = 0; i < tablinks.length; i++) {
+			tablinks[i].className = tablinks[i].className.replace(" active", "");
+		  }
+		  document.getElementById(tabName).style.display = "block";
+		  evt.currentTarget.className += " active";
+		}
+	</script>
+	
+	<script type="module">
+		  import { NFTStorage } from 'https://cdn.skypack.dev/nft.storage'
+		  const endpoint = 'https://api.nft.storage' // the default
+		  const token = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiJkaWQ6ZXRocjoweDkzMTZBRjRjOWY0N0EwNWRGMWQ3ZjQxZUJjMWIwMDFkN0M1MTk1RTAiLCJpc3MiOiJuZnQtc3RvcmFnZSIsImlhdCI6MTYyNjg4NzUxNzM5MCwibmFtZSI6IkRlbW8gQXBwbGljYXRpb24ifQ.c4nmOdSmV52BUtIHXLUGQaMbim6ljTlv-J_xEDDPMt4'
+		
+
+		  document.getElementById('btn').addEventListener('click', async (e) => {
+			e.preventDefault()
+			
+			document.getElementById('result').innerHTML = ""
+			
+			console.log("Mint Token")
+			
+			const name = document.getElementById('name')
+			if (!name.value) alert('Missing name')
+			
+			const desc = document.getElementById('desc')
+			if (!desc.value) alert('Missing description')
+			
+			const fileipfs = document.getElementById('filetoipfs')
+			if (!fileipfs.files.length) alert('No files selected')
+			
+			const att = document.getElementById('att')
+			if (!att.value) alert('Missing attributes')
+			
+			const storage = new NFTStorage({ endpoint, token })
+			
+			try {
+			  const metadata = await storage.store({
+				name: name.value,
+				description: desc.value,
+				image: fileipfs.files[0],
+				attributes: att.value
+			  })
+			  console.log('IPFS URL for the metadata:', metadata.url)
+			  console.log('metadata.json contents:', metadata.data)
+			  console.log('metadata.json contents with IPFS gateway URLs:', metadata.embed())
+			  document.getElementById('result').innerHTML = metadata.url
+			} catch (err) {
+			  console.error(err)
+			}
+		  })
+		  
+		   document.getElementById('view').addEventListener('click', async (e) => {
+			e.preventDefault()
+						
+			console.log("Check Token")
+			
+			const tokenid = document.getElementById('tokenIDr')
+			if (!tokenid.value) alert('Missing Token ID')
+			
+			const storage = new NFTStorage({ endpoint, token })
+			
+			
+			try {
+			  const status = await storage.check(tokenid.value)
+			  console.log('IPFS URL for the metadata:', status.cid)
+			  document.getElementById('token_details').innerHTML = "<iframe width='900px' src='https://ipfs.io/ipfs/"+status.cid+"/metadata.json' title=' '></iframe>"
+			 
+			} catch (err) {
+			  console.error(err)
+			  document.getElementById('token_details').innerHTML = "Not Found" 		
+			}
+		  })
+		  
+		 
+	</script>
+
+   
+
+    <script type="text/javascript" src="https://cdn.jsdelivr.net/npm/web3/dist/web3.js"></script>
+	
+    <script>	
+	
+	var account;
+	window.addEventListener('load', async () => {
+
+	
+		if (typeof window.ethereum !== 'undefined') { 
+			console.log("MetaMask is Available :) !"); 
+			}
+			
+		// Modern DApp browsers
+		if (window.ethereum) {
+			window.web3 = new Web3(ethereum);
+			
+			// To prevent the page reloading when the MetaMask network changes
+			ethereum.autoRefreshOnNetworkChange = false;
+			
+			// To Capture the account details from MetaMask
+			const accounts = await ethereum.enable();
+			account = accounts[0];
+			
+			}
+			// Legacy DApp browsers
+			else if (window.web3) {
+				//window.web3 = new Web3(web3.currentProvider);
+				window.web3 = new Web3(new Web3.providers.HttpProvider("https://ropsten.infura.io/v3/cbd9dc11b30147e9a2cc974be655ef7c")); 
+				}
+			// Non-DApp browsers
+			else {
+				console.log('Non-Ethereum browser detected. Please install MetaMask');
+				}
+			
+			});
+			
+
+			
+			
+			// Function to call the "view_token" in Deployed Smart Contract
+			function view_token() {
+					
+				console.log("Getting the Token Metadata from Filecoin and Token Image from IPFS");
+
+				
+			}
+						
+    </script>
+	
+	<div class="fixed-footer">
+		<div class="container">
+			<center> <h5> Copyright &copy; 2021 <br/> Ramaguru Radhakrishnan, NamChain - Open Initiative Research Lab, Coimbatore, Tamil Nadu, India </h5> </center>
+		</div>
+	</div>
+
+</body>
+</html>
